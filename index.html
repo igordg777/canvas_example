@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пример работы с canvas в HTML5</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+
+<body style="display: block;">
+    <div class='functions' style="text-align: center;">
+        <button id='clearButton' class="btn btn-success">Очистить</button>
+        <button id='saveButton' class="btn btn-info">Сохранить</button>
+        <button id='replayButton' class="btn btn-success">Воспроизвести</button>
+    </div>
+
+
+
+    <canvas id="canvas" style="display: block;">Ваш браузер не поддерживается</canvas>
+
+    <div id="about" style="opacity: 50%" align="right">Enjoy using! © iGorG<a
+            href="https://www.instagram.com/it.sea/?hl=ru"><img class="icons" height="20px" src="./images/inst.png"
+                alt="instagram"></a><a href="https://github.com/igordg777/tableSearch"><img class="icons" height="20px"
+                src="./images/github.png" alt="github"></a></div>
+
+
+    <script>
+
+        let canv = document.getElementById('canvas');
+        let ctx = canv.getContext('2d');
+        let isMouseDown = false;
+        let cords = []
+
+        canv.width = window.innerWidth;
+        canv.height = window.innerHeight;
+
+        canv.addEventListener('mousedown', function (e) {
+            isMouseDown = true;
+
+        })
+
+        canv.addEventListener('mouseup', function (e) {
+            isMouseDown = false;
+            ctx.beginPath();
+            cords.push('mouseup')
+        })
+
+
+        ctx.lineWidth = 5 * 2
+        canv.addEventListener('mousemove', function (e) {
+
+            if (isMouseDown) {
+                cords.push([e.clientX, e.clientY])
+
+                ctx.lineTo(e.clientX, e.clientY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(e.clientX, e.clientY, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.beginPath()
+                ctx.moveTo(e.clientX, e.clientY)
+            }
+
+        })
+
+        function save() {
+            localStorage.setItem('cords', JSON.stringify(cords))
+        }
+
+        function clear() {
+            ctx.fillStyle = 'white'
+            ctx.fillRect(0, 0, canv.width, canv.height)
+
+            ctx.beginPath()
+            ctx.fillStyle = 'black'
+        }
+
+        function replay() {
+            let timer = setInterval(function () {
+
+                if (!cords.length) {
+                    clearInterval(timer);
+                    ctx.beginPath()
+                    return
+                }
+                let crd = cords.shift();
+                let e = {
+                    clientX: crd['0'],
+                    clientY: crd['1']
+                }
+
+                ctx.lineTo(e.clientX, e.clientY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(e.clientX, e.clientY, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.beginPath()
+                ctx.moveTo(e.clientX, e.clientY)
+            }, 30)
+
+        }
+
+        // document.addEventListener('keydown', function (e) {
+
+        //     if (e.keyCode === 83) {
+
+        //         // save
+        //         save()
+        //         console.log('saved')
+        //     }
+
+        //     if (e.keyCode === 82) {
+
+        //         // REPLAY
+        //         console.log('replaying ...')
+
+        //         cords = JSON.parse(localStorage.getItem('cords'))
+        //         clear()
+        //         replay()
+        //     }
+
+        //     if (e.keyCode == 67) {
+
+        //         // clear
+        //         clear()
+        //         console.log('cleared')
+        //     }
+
+        // })
+
+        document.getElementById('saveButton').onclick = () => {
+            // save
+            save()
+            console.log('saved')
+        }
+
+        document.getElementById('replayButton').onclick = () => {
+            console.log('replaying ...')
+
+            cords = JSON.parse(localStorage.getItem('cords'))
+            clear()
+            replay()
+        }
+
+        document.getElementById('clearButton').onclick = () => {
+            // clear
+            clear()
+            console.log('cleared')
+        }
+
+
+    </script>
+
+    <style>
+        .functions {
+            position: absolute;
+        }
+
+
+        .icons:hover {
+            box-shadow: 0 0 10px 0 blue inset, 0 0 10px 4px blue;
+            color: red;
+        }
+    </style>
+
+</body>
+
+</html>
